@@ -1,0 +1,5 @@
+streamlit>=1.63,<2
+google-genai>=2.22,<3
+libsql>=0.1.11,<0.2
+pillow>=10.4
+pandas>=2.2
