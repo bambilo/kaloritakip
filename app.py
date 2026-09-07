@@ -706,7 +706,11 @@ def render_sidebar(user: dict) -> None:
 
 
 def main() -> None:
-    _bootstrap()
+    try:
+        _bootstrap()
+    except db.DatabaseConfigError as exc:
+        st.error(f"⚠️ Veritabanına bağlanılamadı.\n\n{exc}")
+        st.stop()
     _auto_login()
 
     user = st.session_state.get("user")

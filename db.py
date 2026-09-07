@@ -121,6 +121,36 @@ def is_remote() -> bool:
     return bool(_secret("TURSO_DATABASE_URL"))
 
 
+class DatabaseConfigError(Exception):
+    """Turso baglanti bilgileri (URL/token) yanlis veya eksik oldugunda kullaniciya
+    gosterilecek acik mesaj. Ham libsql hatasi secret degerini icerdigi icin
+    Streamlit Cloud onu kullaniciya gizler ("redacted") -- bu yuzden asagida
+    mesaji kendimiz, secret degerini icermeyecek sekilde yeniden yaziyoruz."""
+
+
+def _connect_turso(url: str, token: str | None):
+    import libsql
+
+    try:
+        conn = libsql.connect(database=url, auth_token=token or "")
+        conn.execute("SELECT 1")  # baglantiyi hemen dogrula, ilk gercek sorguda degil
+        return conn
+    except Exception as exc:
+        message = str(exc)
+        if "404" in message or "Host not found" in message:
+            raise DatabaseConfigError(
+                "TURSO_DATABASE_URL geçersiz görünüyor (host bulunamadı). Turso panelinde "
+                "veritabanının sayfasına girip 'Database URL' değerini ('libsql://...' ile "
+                "başlayan, sonu '.turso.io' ile biten tam adres) tekrar kopyalayın."
+            ) from exc
+        if "401" in message or "403" in message or "Unauthorized" in message or "auth" in message.lower():
+            raise DatabaseConfigError(
+                "TURSO_AUTH_TOKEN geçersiz veya eksik görünüyor. Turso panelinde veritabanı "
+                "sayfasından 'Create Token' ile yeni bir token üretip secrets'a tekrar yapıştırın."
+            ) from exc
+        raise DatabaseConfigError(f"Turso bağlantısı kurulamadı: {message[:200]}") from exc
+
+
 def get_conn():
     """Surece bir baglanti. Streamlit yeniden calistirmalarinda korunur."""
     global _conn
@@ -130,9 +160,7 @@ def get_conn():
         if _conn is None:
             url = _secret("TURSO_DATABASE_URL")
             if url:
-                import libsql
-
-                _conn = libsql.connect(database=url, auth_token=_secret("TURSO_AUTH_TOKEN"))
+                _conn = _connect_turso(url, _secret("TURSO_AUTH_TOKEN"))
             else:
                 _conn = sqlite3.connect(LOCAL_DB_PATH, check_same_thread=False)
                 _conn.execute("PRAGMA foreign_keys = ON")
