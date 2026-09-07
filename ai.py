@@ -11,12 +11,12 @@ from typing import Literal
 from PIL import Image, ImageOps
 from pydantic import BaseModel, Field, ValidationError
 
-DEFAULT_MODEL = "gemini-3.6-flash"
-AVAILABLE_MODELS = ["gemini-3.6-flash", "gemini-3.8-flash", "gemini-3.5-flash-lite"]
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
+AVAILABLE_MODELS = ["gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.8-flash"]
 MODEL_NOTES = {
-    "gemini-3.6-flash": "Dengeli — günlük kullanım için önerilen",
-    "gemini-3.8-flash": "En isabetli — zor/karışık tabaklar için",
-    "gemini-3.5-flash-lite": "En hızlı ve ucuz — basit tabaklar için",
+    "gemini-3.5-flash-lite": "En hızlı (~6-7 sn) — günlük kullanım için önerilen",
+    "gemini-3.6-flash": "Dengeli (~20 sn) — orta karmaşık tabaklar için",
+    "gemini-3.8-flash": "En isabetli (~25-30 sn) — zor/karışık tabaklar için",
 }
 
 MAX_EDGE = 1024          # modele gonderilen gorselin uzun kenari
