@@ -77,9 +77,6 @@ Cloud'un diski kalıcı olmadığından veri Turso (libSQL) üzerinde durur — 
 Saat dilimi varsayılan `Europe/Istanbul`'dur (sunucu UTC olduğunda gece yenilen öğünler doğru güne
 yazılsın diye). Değiştirmek için secrets'a `TIMEZONE = "..."` ekleyin.
 
-## Notlar
 
-- `gemini-1.5-flash` ve `google-generativeai` paketi emekliye ayrıldığı için yeni SDK
-  (`google-genai`) ve güncel Flash modelleri kullanılıyor. Sidebar'dan model değiştirilebilir.
 - Modele gönderilen fotoğraf 1024 piksele küçültülür (kota ve hız için); geçmişte görünen
   küçük önizleme 320 piksel olarak veritabanında saklanır.
