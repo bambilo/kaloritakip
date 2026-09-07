@@ -143,10 +143,13 @@ def _connect_turso(url: str, token: str | None):
                 "veritabanının sayfasına girip 'Database URL' değerini ('libsql://...' ile "
                 "başlayan, sonu '.turso.io' ile biten tam adres) tekrar kopyalayın."
             ) from exc
-        if "401" in message or "403" in message or "Unauthorized" in message or "auth" in message.lower():
+        lowered = message.lower()
+        token_markers = ("401", "403", "unauthorized", "invalidtoken", "jwt", "400 bad request")
+        if any(marker in lowered for marker in token_markers):
             raise DatabaseConfigError(
                 "TURSO_AUTH_TOKEN geçersiz veya eksik görünüyor. Turso panelinde veritabanı "
-                "sayfasından 'Create Token' ile yeni bir token üretip secrets'a tekrar yapıştırın."
+                "sayfasından 'Create Token' ile yeni bir token üretip secrets'a tekrar yapıştırın "
+                "(kopyalarken başına/sonuna boşluk veya tırnak eklenmediğinden emin olun)."
             ) from exc
         raise DatabaseConfigError(f"Turso bağlantısı kurulamadı: {message[:200]}") from exc
 
