@@ -1,0 +1,38 @@
+name: KaloriTakip
+options:
+  bundleIdPrefix: com.ardanural
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    DEVELOPMENT_TEAM: ""
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  KaloriTakip:
+    type: application
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: KaloriTakip
+    info:
+      path: KaloriTakip/Info.plist
+      properties:
+        CFBundleDisplayName: "Kalori Takip"
+        UIUserInterfaceStyle: Dark
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: "Yemek fotoğrafı çekip kalori tahmini yapmak için kameraya ihtiyaç var."
+        NSPhotoLibraryUsageDescription: "Galeriden yemek fotoğrafı seçebilmek için fotoğraflara erişim gerekiyor."
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ardanural.kaloritakip
+        TARGETED_DEVICE_FAMILY: "1"
+        ENABLE_PREVIEWS: true
+        SWIFT_EMIT_LOC_STRINGS: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

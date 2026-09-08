@@ -1,10 +1,12 @@
-.streamlit/secrets.toml
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
-.venv/
-venv/
-__pycache__/
-*.pyc
 .DS_Store
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.build/
+
+# XcodeGen ile project.yml'den uretilir, elle duzenlenmez
+*.xcodeproj/
+*.swift.bak
+
+# Gercek API anahtari - Secrets.swift.example sablonundan kopyalanir, repoya girmez
+KaloriTakip/Secrets.swift

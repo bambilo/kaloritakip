@@ -1,82 +1,68 @@
-# 🥗 Kalori Takip
+# Kalori Takip
 
-Yemek fotoğrafından **referans nesnelerle ölçekleme** yaparak porsiyon, gramaj, kalori ve
-makro tahmini yapan; onayladığın kayıtları günlük beslenme günlüğüne yazan Streamlit uygulaması.
+Yemek fotoğrafı çekiyorsun, uygulama kadrajdaki bardağı, tabağı, çatalı referans alıp
+gerçek porsiyonu, gramajı, kaloriyi ve makroları tahmin ediyor. Diğer kalori
+uygulamalarından farkı da tam olarak bu: göz kararı bir sayı üretmek yerine önce
+kadrajdaki bilinen boyutlu nesnelerle tabağın gerçek çapını çıkarıyor, sonra hacim
+üzerinden gramaja geçiyor — tıpkı bir diyetisyenin yapacağı gibi.
 
-- **Vision AI:** Gemini (varsayılan `gemini-3.6-flash`) — kadrajdaki bardak, çatal, tabak kenarı,
-  el gibi bilinen nesnelerle tabağın gerçek boyutunu oranlar, hacim → yoğunluk → gramaj yolunu izler.
-- **Düzeltme:** Her kalem ayrı kart; gramajı değiştirdiğinde kalori ve makrolar orantılı güncellenir.
-  Kaloriyi elle yazarsan o kalemde oranlama durur.
-- **Takip:** Günlük kalori/makro toplamları, hedefe göre ilerleme, öğün bazlı liste, tekil silme.
-- **Çok kullanıcı:** İsim + PIN ile ayrı profiller, ayrı hedefler ve ayrı geçmiş.
+Başlangıçta Streamlit ile yazılmış bir web uygulamasıydı; bu repo onun yerine geçen,
+tamamen native SwiftUI ile yazılmış iOS uygulaması. Aracı sunucu yok — telefon
+doğrudan Gemini'ye bağlanıyor, veriler cihazda tutuluyor. İki kişilik (aile) kullanım
+için düşünüldü; her telefon kendi verisini tutuyor.
 
-## Kurulum (yerel)
+## Özellikler
 
-```bash
-brew install python@3.12                      # Streamlit ve google-genai Python >= 3.10 istiyor
-cd ~/kaloritakip
-python3.12 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+- **Fotoğrafla analiz** — kamera veya galeriden fotoğraf, referans nesnelerle
+  ölçekleme yapan bir sistem promptuyla Gemini'ye gönderiliyor
+- **Düzenlenebilir sonuç** — analiz sonrası her kalemin adı, gramajı, kalorisi,
+  makroları elle düzeltilebiliyor; gramaj değişince değerler orantılı güncelleniyor
+- **Günlük takip** — kalori ve makro hedeflerine göre ilerleme, öğün bazlı liste
+- **Geçmiş** — 7/30 günlük grafik, günlük detaya inme
+- **Favoriler** ve **elle ekleme** — fotoğrafsız hızlı kayıt
+- **Otomatik hedef hesabı** — boy/kilo/yaş/aktivite/hedefe göre BMR/TDEE tabanlı
+  kalori ve makro hedefi, istenirse elle de girilebiliyor
+- Analiz kalitesi (hızlı/dengeli/titiz) dışında hiçbir teknik detay veya model adı
+  arayüzde görünmüyor
 
-cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# secrets.toml içine GEMINI_API_KEY yaz (https://aistudio.google.com -> Get API key)
+## Kullanılan teknolojiler
 
-streamlit run app.py                          # http://localhost:8501
-```
+- **Swift / SwiftUI** — arayüz
+- **SwiftData** — yerel veri saklama (yemek kayıtları, favoriler, profil)
+- **Swift Charts** — geçmiş grafiği
+- **XcodeGen** — proje dosyası `project.yml`'den üretiliyor, elle düzenlenmiyor
+- **Gemini API** — görsel analiz (referans nesneyle porsiyon/kalori tahmini)
 
-Yerelde veriler `kaloritakip.db` (SQLite) dosyasında tutulur; ilk çalıştırmada otomatik oluşur.
+## Kurulum
 
-## Deploy (telefondan iki kişi kullanmak için)
-
-Tarayıcı kamerası yalnızca HTTPS'te açıldığı için uygulama Streamlit Community Cloud'da barındırılır.
-Cloud'un diski kalıcı olmadığından veri Turso (libSQL) üzerinde durur — SQL ve şema birebir SQLite.
-
-1. **Turso:** [app.turso.tech](https://app.turso.tech) → ücretsiz hesap (GitHub ile giriş yapılabilir) →
-   *Create Database* → adı `kaloritakip` → bölge Frankfurt/Amsterdam → oluştuktan sonra
-   veritabanı sayfasından **Database URL** (`libsql://...`) ve *Create Token* ile **auth token** al.
-   Tabloları elle oluşturmana gerek yok; uygulama ilk açılışta şemayı kendisi kurar.
-2. **GitHub:** `git init && git add . && git commit -m "kalori takip"` → **private** repo'ya push.
-   (`.streamlit/secrets.toml` `.gitignore`'da, repoya girmez.)
-3. **Streamlit Cloud:** [share.streamlit.io](https://share.streamlit.io) → repo'yu bağla →
-   *Advanced settings* → **Python 3.12** → Secrets alanına:
-
-   ```toml
-   GEMINI_API_KEY = "..."
-   TURSO_DATABASE_URL = "libsql://....turso.io"
-   TURSO_AUTH_TOKEN = "..."
-   ```
-
-4. İlk açılışta **Yeni profil** sekmesinden kendi profilini, arkadaşın da kendi profilini oluşturur.
-5. Telefondan HTTPS adrese gir → tarayıcı menüsünden **Ana ekrana ekle**. "Beni hatırla"
-   işaretlersen kısayoldan her açılışta otomatik giriş yaparsın (30 gün).
-
-> **Not:** "Beni hatırla" tokeni adres çubuğundaki `?t=...` parametresinde durur. O adresi
-> başkasıyla paylaşırsan profiline erişebilir; paylaşırken adresin `?t=` kısmını silin.
-
-## Dosyalar
-
-| Dosya | İş |
-|---|---|
-| `app.py` | Streamlit arayüzü: giriş, Ekle / Bugün / Geçmiş / Profil sekmeleri |
-| `ai.py` | Vision system prompt, JSON şeması, Gemini çağrısı, görsel ön işleme (EXIF + küçültme) |
-| `db.py` | Şema ve tüm CRUD; `TURSO_DATABASE_URL` varsa Turso, yoksa yerel SQLite |
-| `auth.py` | Profil, PIN (pbkdf2-sha256), "beni hatırla" tokeni |
-| `nutrition.py` | Mifflin-St Jeor hedefleri, orantılı porsiyon ölçekleme, tarih/saat dilimi |
-
-## Doğrulama / hata ayıklama
+Gereksinimler: Xcode (26+), [XcodeGen](https://github.com/yonaskolb/XcodeGen)
+(`brew install xcodegen`).
 
 ```bash
-# Veritabanı sağlığı
-.venv/bin/python -c "import db; db.init_db(); print(db.health())"
-
-# Gemini'yi arayüzsüz dene (prompt çıktısını ham JSON olarak gör)
-.venv/bin/python -m ai fotograf.jpg
-.venv/bin/python -m ai fotograf.jpg gemini-3.8-flash
+git clone https://github.com/bambilo/kaloritakip.git
+cd kaloritakip
+cp KaloriTakip/Secrets.swift.example KaloriTakip/Secrets.swift
+# Secrets.swift içine kendi Gemini API anahtarınızı yapıştırın
+# (https://aistudio.google.com -> Get API key)
+xcodegen generate
+open KaloriTakip.xcodeproj
 ```
 
-Saat dilimi varsayılan `Europe/Istanbul`'dur (sunucu UTC olduğunda gece yenilen öğünler doğru güne
-yazılsın diye). Değiştirmek için secrets'a `TIMEZONE = "..."` ekleyin.
+### Telefona kurma (ücretsiz Apple ID ile sideload)
 
+1. iPhone'u Mac'e kabloyla bağlayın, Xcode'da cihaz seçiciden telefonu seçin.
+2. `KaloriTakip` hedefi → **Signing & Capabilities** → **Team**'den kendi Apple
+   ID'nizi seçin (ücretsiz hesap yeterli). Bundle identifier çakışırsa
+   (`com.ardanural.kaloritakip`) sonuna kendi isminizi ekleyip benzersiz yapın.
+3. ⌘R (Run) — ilk seferde telefonda **Ayarlar → Genel → VPN ve Cihaz Yönetimi**
+   üzerinden geliştirici profilinize güvenmeniz gerekiyor.
+4. Ücretsiz Apple ID ile imzalanan uygulamalar **7 günde bir** yeniden imzalanmalı;
+   bir hafta sonra Mac'e bağlayıp tekrar ⌘R yapmanız yeterli, veriler silinmiyor.
 
-- Modele gönderilen fotoğraf 1024 piksele küçültülür (kota ve hız için); geçmişte görünen
-  küçük önizleme 320 piksel olarak veritabanında saklanır.
+## Notlar
+
+- API anahtarı `Secrets.swift` içinde tutuluyor (gitignore'da, repoya girmiyor).
+  Bu proje **yalnızca kişisel sideload kullanımı** içindir — App Store'a
+  yüklemeyin, IPA'yı paylaşmayın.
+- Sistem promptu Türk mutfağı ve standart servis kaplarına (bardak, tabak, kaşık
+  vb.) göre kalibre edilmiş.
